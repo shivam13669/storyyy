@@ -175,10 +175,7 @@ const BikeSelectionStep = ({
                       </p>
                       <div className="flex items-baseline gap-2">
                         <span className="text-2xl font-bold text-gray-900">
-                          {formatPrice(basePrice)}
-                        </span>
-                        <span className="text-sm font-semibold text-green-600">
-                          ✓ EARLY BIRD OFFER!
+                          {formatPrice(30799)}
                         </span>
                       </div>
                     </div>
