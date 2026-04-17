@@ -5,51 +5,42 @@
  * All pages (destination, booking, etc) fetch prices from here
  */
 
-// Regional pricing with markup percentages
-export type RegionConfig = {
-  code: string; // Country code: "IN", "US", "GB", etc.
+// Currency pricing with markup percentages
+export type CurrencyConfig = {
+  currencyCode: string; // "INR", "USD", "EUR", etc.
   name: string;
-  currency: string;
-  markupPercent: number; // Percentage markup for non-Indian regions
+  markupPercent: number; // Percentage markup - 0% for India, 50% for all others
 };
 
-export const REGION_CONFIGS: Record<string, RegionConfig> = {
-  IN: {
-    code: "IN",
-    name: "India",
-    currency: "INR",
-    markupPercent: 0, // No markup for India - base price
-  },
-  US: {
-    code: "US",
-    name: "United States",
-    currency: "USD",
-    markupPercent: 50, // 50% markup for USA
-  },
-  GB: {
-    code: "GB",
-    name: "United Kingdom",
-    currency: "GBP",
-    markupPercent: 50,
-  },
-  AU: {
-    code: "AU",
-    name: "Australia",
-    currency: "AUD",
-    markupPercent: 50,
-  },
-  CA: {
-    code: "CA",
-    name: "Canada",
-    currency: "CAD",
-    markupPercent: 50,
-  },
-  EU: {
-    code: "EU",
-    name: "Europe",
-    currency: "EUR",
-    markupPercent: 50,
-  },
+// All supported currencies with their markup
+// India (INR) = 0% markup (base price)
+// All other countries = 50% markup
+export const CURRENCY_CONFIGS: Record<string, CurrencyConfig> = {
+  INR: { currencyCode: "INR", name: "Indian Rupee", markupPercent: 0 },
+  USD: { currencyCode: "USD", name: "United States Dollar", markupPercent: 50 },
+  EUR: { currencyCode: "EUR", name: "Euro", markupPercent: 50 },
+  GBP: { currencyCode: "GBP", name: "British Pound", markupPercent: 50 },
+  AED: { currencyCode: "AED", name: "United Arab Emirates Dirham", markupPercent: 50 },
+  SGD: { currencyCode: "SGD", name: "Singapore Dollar", markupPercent: 50 },
+  AUD: { currencyCode: "AUD", name: "Australian Dollar", markupPercent: 50 },
+  CAD: { currencyCode: "CAD", name: "Canadian Dollar", markupPercent: 50 },
+  JPY: { currencyCode: "JPY", name: "Japanese Yen", markupPercent: 50 },
+  CNY: { currencyCode: "CNY", name: "Chinese Yuan", markupPercent: 50 },
+  CHF: { currencyCode: "CHF", name: "Swiss Franc", markupPercent: 50 },
+  HKD: { currencyCode: "HKD", name: "Hong Kong Dollar", markupPercent: 50 },
+  NZD: { currencyCode: "NZD", name: "New Zealand Dollar", markupPercent: 50 },
+  SEK: { currencyCode: "SEK", name: "Swedish Krona", markupPercent: 50 },
+  NOK: { currencyCode: "NOK", name: "Norwegian Krone", markupPercent: 50 },
+  DKK: { currencyCode: "DKK", name: "Danish Krone", markupPercent: 50 },
+  ZAR: { currencyCode: "ZAR", name: "South African Rand", markupPercent: 50 },
+  THB: { currencyCode: "THB", name: "Thai Baht", markupPercent: 50 },
+  MYR: { currencyCode: "MYR", name: "Malaysian Ringgit", markupPercent: 50 },
+  IDR: { currencyCode: "IDR", name: "Indonesian Rupiah", markupPercent: 50 },
+  LKR: { currencyCode: "LKR", name: "Sri Lankan Rupee", markupPercent: 50 },
+  BHD: { currencyCode: "BHD", name: "Bahraini Dinar", markupPercent: 50 },
+  QAR: { currencyCode: "QAR", name: "Qatari Riyal", markupPercent: 50 },
+  OMR: { currencyCode: "OMR", name: "Omani Rial", markupPercent: 50 },
+  KWD: { currencyCode: "KWD", name: "Kuwaiti Dinar", markupPercent: 50 },
 };
 
 // Package pricing configuration
@@ -162,19 +153,19 @@ export const PACKAGE_PRICING: Record<string, PackagePricingConfig> = {
 };
 
 /**
- * Calculate price with regional markup
- * @param basePrice - Price in INR
- * @param regionCode - Country code (e.g., "IN", "US", "GB")
+ * Calculate price with currency markup
+ * @param basePrice - Price in INR (base currency)
+ * @param currencyCode - Currency code (e.g., "INR", "USD", "GBP")
  * @returns Price with markup applied
  */
-export function calculateRegionalPrice(
+export function calculateCurrencyPrice(
   basePrice: number,
-  regionCode: string = "IN"
+  currencyCode: string = "INR"
 ): number {
-  const region = REGION_CONFIGS[regionCode];
-  if (!region) return basePrice;
+  const currencyConfig = CURRENCY_CONFIGS[currencyCode];
+  if (!currencyConfig) return basePrice;
 
-  const markupFactor = 1 + region.markupPercent / 100;
+  const markupFactor = 1 + currencyConfig.markupPercent / 100;
   return Math.round(basePrice * markupFactor);
 }
 
@@ -186,13 +177,13 @@ export function getPackagePricing(packageSlug: string): PackagePricingConfig | n
 }
 
 /**
- * Get bike pricing with seating preference
+ * Get bike pricing with seating preference and currency
  */
 export function getBikePrice(
   packageSlug: string,
   bikeId: string,
   seatingPreference: "solo" | "dual-sharing" | "seat-in-backup" = "solo",
-  regionCode: string = "IN"
+  currencyCode: string = "INR"
 ): number {
   const packagePricing = getPackagePricing(packageSlug);
   if (!packagePricing) return 0;
@@ -201,5 +192,5 @@ export function getBikePrice(
   if (!bike) return packagePricing.basePriceINR;
 
   const basePrice = bike.seatingPrices[seatingPreference] || packagePricing.basePriceINR;
-  return calculateRegionalPrice(basePrice, regionCode);
+  return calculateCurrencyPrice(basePrice, currencyCode);
 }
